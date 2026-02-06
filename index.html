@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FunLessons – Flashcards 2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<style>
+/* --- ESTILOS VISUALES --- */
+:root {
+    --primary: #ff7043;      /* Coral anaranjado */
+    --secondary: #ffca28;    /* Amarillo */
+    --accent: #26a69a;       /* Turquesa */
+    --bg-gradient: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    background: var(--bg-gradient);
+    min-height: 100vh;
+    padding: 15px;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.app {
+    width: 100%;
+    max-width: 600px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 25px;
+    box-shadow: 0 10px 30px rgba(255, 112, 67, 0.3);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    background: var(--primary);
+    color: #fff;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+.logo { font-size: 1.8rem; font-weight: 900; letter-spacing: 1px; margin: 0; }
+
+.controls-top {
+    padding: 15px;
+    background: #fff;
+    border-bottom: 2px solid #eee;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+select {
+    padding: 10px 20px;
+    border-radius: 25px;
+    border: 2px solid var(--accent);
+    font-size: 1rem;
+    font-weight: bold;
+    color: var(--accent);
+    outline: none;
+    cursor: pointer;
+    background: #e0f2f1;
+}
+
+/* --- ESCENARIO DE LA FLASHCARD --- */
+.scene {
+    width: 100%;
+    height: 350px;
+    perspective: 1000px;
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.card {
+    width: 280px;
+    height: 320px;
+    position: relative;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    cursor: pointer;
+}
+
+.card.is-flipped { transform: rotateY(180deg); }
+
+.card-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    border: 4px solid #fff;
+}
+
+.card-face.front { background: #fff; border-color: var(--secondary); }
+.card-face.back { background: var(--accent); color: white; transform: rotateY(180deg); border-color: var(--accent); }
+
+.content-display { 
+    font-size: 8rem; 
+    width: 100%; 
+    height: 220px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+}
+.content-display img { 
+    max-width: 90%; 
+    max-height: 90%; 
+    object-fit: contain; 
+}
+
+.word-text { font-size: 2.2rem; font-weight: bold; text-transform: uppercase; text-align: center; padding: 0 10px; }
+.tap-hint { font-size: 0.9rem; color: #aaa; margin-top: 15px; opacity: 0.7; }
+
+/* --- NAVEGACIÓN --- */
+.nav-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    background: #f9f9f9;
+}
+
+.nav-btn {
+    background: white;
+    border: 2px solid var(--primary);
+    color: var(--primary);
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.nav-btn:disabled { border-color: #ccc; color: #ccc; }
+
+.counter { font-size: 1.1rem; font-weight: bold; color: #777; background: #eee; padding: 5px 15px; border-radius: 15px; }
+
+.sound-btn {
+    background: rgba(255,255,255,0.2);
+    border: 2px solid #fff;
+    color: #fff;
+    border-radius: 50%;
+    width: 45px; height: 45px;
+    cursor: pointer;
+    font-size: 1.3rem;
+    margin-top: 10px;
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+    <header><div class="logo">⚡ Flashcards 2 <span>🇬🇧</span></div></header>
+
+    <div class="controls-top">
+        <select id="categorySelect" onchange="changeCategory()">
+            <option value="ALL">🌟 Mix (All)</option>
+            <option value="NUMBERS">🔢 Numbers</option>
+            <option value="COLOURS">🔵 Colours</option>
+            <option value="HOUSE_FURNITURE">🪑 House Furniture</option> 
+            <option value="HOUSE_ROOMS">🏡 House Rooms</option> 
+            <option value="HOBBIES">🎸 Hobbies</option>
+            <option value="CLOTHES">👕 Clothes</option>
+            <option value="WEATHER">☀️ Weather</option>
+            <option value="ANIMALS">🦊 Animals</option> 
+            <option value="SUPERHEROES">🦸 Superheroes</option>
+            <option value="FREETIME">📷 Free Time</option>
+        </select>
+    </div>
+
+    <div class="scene">
+        <div class="card" id="flashcard" onclick="flipCard()">
+            <div class="card-face front">
+                <div class="content-display" id="cardImg">❓</div>
+                <div class="tap-hint">👆 Tap to flip</div>
+            </div>
+            <div class="card-face back">
+                <div class="word-text" id="cardWord">WORD</div>
+                <button class="sound-btn" onclick="event.stopPropagation(); playCurrentAudio()">🔊</button>
+                <div class="tap-hint" style="color:white">👆 Tap to flip back</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-controls">
+        <button class="nav-btn" id="prevBtn" onclick="prevCard()">⬅️</button>
+        <div class="counter" id="counterDisplay">1 / 10</div>
+        <button class="nav-btn" id="nextBtn" onclick="nextCard()">➡️</button>
+    </div>
+</div>
+
+<script>
+const vocab = [
+ // House Furniture
+ {en:"BOOKCASE", img:"bookcase.png", isImage: true, cat:"HOUSE_FURNITURE"},
+ {en:"CHAIR", img:"🪑", cat:"HOUSE_FURNITURE"},
+ {en:"CUPBOARD", img:"cupboard.png", isImage: true, cat:"HOUSE_FURNITURE"},
+ {en:"DOOR", img:"🚪", cat:"HOUSE_FURNITURE"},
+ {en:"PLANT", img:"🪴", cat:"HOUSE_FURNITURE"},
+ {en:"RUG", img:"rug.png", isImage: true, cat:"HOUSE_FURNITURE"},
+ {en:"TABLE", img:"table.png", isImage: true, cat:"HOUSE_FURNITURE"},
+ {en:"WINDOW", img:"🪟", cat:"HOUSE_FURNITURE"},
+ {en:"BIN", img:"🗑️", cat:"HOUSE_FURNITURE"},
+ {en:"SOFA", img:"🛋️", cat:"HOUSE_FURNITURE"},
+ 
+ // House Rooms
+ {en:"GARDEN", img:"garden.png", isImage: true, cat:"HOUSE_ROOMS"},
+ {en:"HALL", img:"hall.png", isImage: true, cat:"HOUSE_ROOMS"},
+ {en:"KITCHEN", img:"kitchen.png", isImage: true, cat:"HOUSE_ROOMS"},
+ {en:"BATHROOM", img:"bathroom.png", isImage: true, cat:"HOUSE_ROOMS"},
+ {en:"BEDROOM", img:"bedroom.png", isImage: true, cat:"HOUSE_ROOMS"},
+ {en:"LIVING ROOM", img:"living room.png", isImage: true, cat:"HOUSE_ROOMS"},
+ {en:"GARAGE", img:"garage.png", isImage: true, cat:"HOUSE_ROOMS"},
+
+ // Hobbies
+ {en:"DANCE", img:"💃", cat:"HOBBIES"},
+ {en:"DO KARATE", img:"🥋", cat:"HOBBIES"},
+ {en:"JUGGLE", img:"🤹", cat:"HOBBIES"},
+ {en:"MAKE MODELS", img:"✈️", cat:"HOBBIES"},
+ {en:"PAINT", img:"🎨", cat:"HOBBIES"},
+ {en:"PLAY THE GUITAR", img:"🎸", cat:"HOBBIES"},
+ {en:"RIDE A BIKE", img:"🚴", cat:"HOBBIES"},
+ {en:"SING", img:"🎤", cat:"HOBBIES"},
+
+ // Clothes
+ {en:"COAT", img:"🧥", cat:"CLOTHES"},
+ {en:"DRESS", img:"👗", cat:"CLOTHES"},
+ {en:"HAT", img:"🎩", cat:"CLOTHES"},
+ {en:"JEANS", img:"👖", cat:"CLOTHES"},
+ {en:"JUMPER", img:"jumper.png", isImage: true, cat:"CLOTHES"},
+ {en:"SHIRT", img:"👔", cat:"CLOTHES"},
+ {en:"SHOES", img:"👞", cat:"CLOTHES"},
+ {en:"SHORTS", img:"🩳", cat:"CLOTHES"},
+ {en:"SKIRT", img:"skirt.png", isImage: true, cat:"CLOTHES"},
+ {en:"T-SHIRT", img:"👕", cat:"CLOTHES"},
+ {en:"TROUSERS", img:"trousers.png", isImage: true, cat:"CLOTHES"},
+ {en:"JACKET", img:"jacket.png", isImage: true, cat:"CLOTHES"},
+ {en:"BOOTS", img:"👢", cat:"CLOTHES"},
+ {en:"GLASSES", img:"👓", cat:"CLOTHES"},
+ {en:"SCARF", img:"🧣", cat:"CLOTHES"},
+ {en:"SOCKS", img:"🧦", cat:"CLOTHES"},
+
+ // Weather
+ {en:"CLOUDY", img:"☁️", cat:"WEATHER"},
+ {en:"COLD", img:"❄️", cat:"WEATHER"},
+ {en:"HOT", img:"🥵", cat:"WEATHER"},
+ {en:"RAINY", img:"🌧️", cat:"WEATHER"},
+ {en:"SNOWY", img:"🌨️", cat:"WEATHER"},
+ {en:"SUNNY", img:"☀️", cat:"WEATHER"},
+ {en:"WINDY", img:"🌬️", cat:"WEATHER"},
+ {en:"STORMY", img:"⛈️", cat:"WEATHER"},
+
+ // Animals
+ {en:"BAT", img:"🦇", cat:"ANIMALS"},
+ {en:"BIRD", img:"🐦", cat:"ANIMALS"},
+ {en:"BUTTERFLY", img:"🦋", cat:"ANIMALS"},
+ {en:"DUCK", img:"🦆", cat:"ANIMALS"},
+ {en:"FROG", img:"🐸", cat:"ANIMALS"},
+ {en:"HEDGEHOG", img:"🦔", cat:"ANIMALS"},
+ {en:"SQUIRREL", img:"🐿️", cat:"ANIMALS"},
+ {en:"CLIMB", img:"🧗", cat:"ANIMALS"},
+ {en:"FLY", img:"fly.png", isImage: true, cat:"ANIMALS"},
+ {en:"JUMP", img:"jump.png", isImage: true, cat:"ANIMALS"},
+ {en:"RUN", img:"🏃", cat:"ANIMALS"},
+ {en:"SWIM", img:"🏊", cat:"ANIMALS"},
+ {en:"LIZARD", img:"🦎", cat:"ANIMALS"},
+ {en:"SNAKE", img:"🐍", cat:"ANIMALS"},
+ {en:"OWL", img:"🦉", cat:"ANIMALS"},
+ {en:"SPIDER", img:"🕷️", cat:"ANIMALS"},
+ {en:"FOX", img:"🦊", cat:"ANIMALS"},
+ {en:"WALK", img:"🚶", cat:"ANIMALS"},
+
+ // Colours
+ {en:"BLUE", es:"AZUL", img:"🔵", cat:"COLOURS"},
+ {en:"PINK", es:"ROSA", img:"🩷", cat:"COLOURS"},
+ {en:"PURPLE", es:"MORADO", img:"💜", cat:"COLOURS"},
+ {en:"YELLOW", es:"AMARILLO", img:"💛", cat:"COLOURS"},
+ {en:"RED", es:"ROJO", img:"🔴", cat:"COLOURS"},
+ {en:"GREEN", es:"VERDE", img:"🟢", cat:"COLOURS"},
+ {en:"BLACK", es:"NEGRO", img:"⚫", cat:"COLOURS"},
+ {en:"WHITE", es:"BLANCO", img:"⚪", cat:"COLOURS"},
+ {en:"BROWN", es:"MARRÓN", img:"🟤", cat:"COLOURS"},
+ {en:"GREY", es:"GRIS", img:"🩶", cat:"COLOURS"},
+ {en:"ORANGE", es:"NARANJA", img:"🟠", cat:"COLOURS"},
+
+ // Numbers
+ {en:"ELEVEN", es:"ONCE", img:"1️⃣1️⃣", cat:"NUMBERS"},
+ {en:"TWELVE", es:"DOCE", img:"1️⃣2️⃣", cat:"NUMBERS"},
+ {en:"THIRTEEN", es:"TRECE", img:"1️⃣3️⃣", cat:"NUMBERS"},
+ {en:"FOURTEEN", es:"CATORCE", img:"1️⃣4️⃣", cat:"NUMBERS"},
+ {en:"FIFTEEN", es:"QUINCE", img:"1️⃣5️⃣", cat:"NUMBERS"},
+ {en:"SIXTEEN", es:"DIECISÉIS", img:"1️⃣6️⃣", cat:"NUMBERS"},
+ {en:"SEVENTEEN", es:"DIECISIETE", img:"1️⃣7️⃣", cat:"NUMBERS"},
+ {en:"EIGHTEEN", es:"DIECIOCHO", img:"1️⃣8️⃣", cat:"NUMBERS"},
+ {en:"NINETEEN", es:"DIECINUEVE", img:"1️⃣9️⃣", cat:"NUMBERS"},
+ {en:"TWENTY", es:"VEINTE", img:"2️⃣0️⃣", cat:"NUMBERS"},
+ {en:"ONE", es:"UNO", img:"1️⃣", cat:"NUMBERS"},
+ {en:"TWO", es:"DOS", img:"2️⃣", cat:"NUMBERS"},
+ {en:"THREE", es:"TRES", img:"3️⃣", cat:"NUMBERS"},
+ {en:"FOUR", es:"CUATRO", img:"4️⃣", cat:"NUMBERS"},
+ {en:"FIVE", es:"CINCO", img:"5️⃣", cat:"NUMBERS"},
+ {en:"SIX", es:"SEIS", img:"6️⃣", cat:"NUMBERS"},
+ {en:"SEVEN", es:"SIETE", img:"7️⃣", cat:"NUMBERS"},
+ {en:"EIGHT", es:"OCHO", img:"8️⃣", cat:"NUMBERS"},
+ {en:"NINE", es:"NUEVE", img:"9️⃣", cat:"NUMBERS"},
+ {en:"TEN", es:"DIEZ", img:"🔟", cat:"NUMBERS"},
+
+ // Superheroes
+ {en:"CLEVER", img:"🧠", cat:"SUPERHEROES"},
+ {en:"FAST", img:"⚡", cat:"SUPERHEROES"},
+ {en:"INVISIBLE", img:"invisible.png", isImage: true, cat:"SUPERHEROES"},
+ {en:"SCARY", img:"👹", cat:"SUPERHEROES"},
+ {en:"SHORT", img:"short.png", isImage: true, cat:"SUPERHEROES"},
+ {en:"STRONG", img:"💪", cat:"SUPERHEROES"},
+ {en:"TALL", img:"tall.png", isImage: true, cat:"SUPERHEROES"},
+ {en:"THIN", img:"thin.png", isImage: true, cat:"SUPERHEROES"},
+ {en:"CAPE", img:"cape.png", isImage: true, cat:"SUPERHEROES"},
+ {en:"BELT", img:"belt.png", isImage: true, cat:"SUPERHEROES"},
+
+ // Free Time
+ {en:"DRAWING", img:"draw.png", isImage: true, cat:"FREETIME"},
+ {en:"DRINKING", img:"drink.png", isImage: true, cat:"FREETIME"},
+ {en:"EATING", img:"eat.png", isImage: true, cat:"FREETIME"},
+ {en:"LISTENING", img:"🎧", cat:"FREETIME"},
+ {en:"READING", img:"read.png", isImage: true, cat:"FREETIME"},
+ {en:"TAKING PHOTOS", img:"take photos.png", isImage: true, cat:"FREETIME"},
+ {en:"TALKING", img:"🗣️", cat:"FREETIME"},
+ {en:"WRITING", img:"📝", cat:"FREETIME"}
+];
+
+let currentList = [], currentIndex = 0, isFlipped = false;
+const ui = {
+    card: document.getElementById("flashcard"),
+    img: document.getElementById("cardImg"),
+    word: document.getElementById("cardWord"),
+    counter: document.getElementById("counterDisplay"),
+    prevBtn: document.getElementById("prevBtn"),
+    nextBtn: document.getElementById("nextBtn")
+};
+
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function changeCategory() {
+    const cat = document.getElementById("categorySelect").value;
+    currentList = shuffle(cat === "ALL" ? [...vocab] : vocab.filter(i => i.cat === cat));
+    currentIndex = 0;
+    resetCard();
+    updateUI();
+}
+
+function updateUI() {
+    if(!currentList.length) return;
+    const item = currentList[currentIndex];
+    ui.img.innerHTML = item.isImage ? `<img src="${item.img}">` : item.img;
+    ui.word.textContent = item.en;
+    ui.counter.textContent = `${currentIndex + 1} / ${currentList.length}`;
+    ui.prevBtn.disabled = currentIndex === 0;
+    ui.nextBtn.disabled = currentIndex === currentList.length - 1;
+}
+
+function flipCard() {
+    isFlipped = !isFlipped;
+    ui.card.classList.toggle("is-flipped", isFlipped);
+    if(isFlipped) setTimeout(playCurrentAudio, 200);
+}
+
+function resetCard() { isFlipped = false; ui.card.classList.remove("is-flipped"); }
+
+function nextCard() { if(currentIndex < currentList.length-1){ currentIndex++; resetCard(); setTimeout(updateUI, 150); }}
+function prevCard() { if(currentIndex > 0){ currentIndex--; resetCard(); setTimeout(updateUI, 150); }}
+
+function playCurrentAudio() {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(currentList[currentIndex].en);
+    u.lang = "en-GB"; u.rate = 0.9;
+    window.speechSynthesis.speak(u);
+}
+
+changeCategory();
+</script>
+</body>
+</html>
