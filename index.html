@@ -8,9 +8,9 @@
 <style>
 /* --- ESTILOS VISUALES --- */
 :root {
-    --primary: #ff7043;      /* Coral anaranjado */
-    --secondary: #ffca28;    /* Amarillo */
-    --accent: #26a69a;       /* Turquesa */
+    --primary: #ff7043;
+    --secondary: #ffca28;    
+    --accent: #26a69a;
     --bg-gradient: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
 }
 
@@ -51,11 +51,32 @@ header {
     background: #fff;
     border-bottom: 2px solid #eee;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     gap: 10px;
     align-items: center;
-    flex-wrap: wrap;
 }
+
+/* Panel de selección múltiple */
+#multiSelectContainer {
+    display: none;
+    background: #f0f2f1;
+    padding: 15px;
+    border-radius: 15px;
+    margin: 10px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    border: 2px solid var(--accent);
+}
+
+.check-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    color: #444;
+}
+
 select {
     padding: 10px 20px;
     border-radius: 25px;
@@ -109,7 +130,7 @@ select {
 
 .content-display { 
     font-size: 8rem; 
-    width: 100%; 
+    width: 100%;
     height: 220px; 
     display: flex; 
     align-items: center; 
@@ -117,7 +138,7 @@ select {
 }
 .content-display img { 
     max-width: 90%; 
-    max-height: 90%; 
+    max-height: 90%;
     object-fit: contain; 
 }
 
@@ -144,7 +165,6 @@ select {
 }
 
 .nav-btn:disabled { border-color: #ccc; color: #ccc; }
-
 .counter { font-size: 1.1rem; font-weight: bold; color: #777; background: #eee; padding: 5px 15px; border-radius: 15px; }
 
 .sound-btn {
@@ -165,19 +185,37 @@ select {
     <header><div class="logo">⚡ Flashcards 2 <span>🇬🇧</span></div></header>
 
     <div class="controls-top">
-        <select id="categorySelect" onchange="changeCategory()">
-            <option value="ALL">🌟 Mix (All)</option>
-            <option value="NUMBERS">🔢 Numbers</option>
-            <option value="COLOURS">🔵 Colours</option>
-            <option value="HOUSE_FURNITURE">🪑 House Furniture</option> 
-            <option value="HOUSE_ROOMS">🏡 House Rooms</option> 
-            <option value="HOBBIES">🎸 Hobbies</option>
-            <option value="CLOTHES">👕 Clothes</option>
-            <option value="WEATHER">☀️ Weather</option>
-            <option value="ANIMALS">🦊 Animals</option> 
-            <option value="SUPERHEROES">🦸 Superheroes</option>
-            <option value="FREETIME">📷 Free Time</option>
-        </select>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <label style="font-weight:bold; color:#666;">Topic:</label>
+            <select id="categorySelect" onchange="toggleMultiSelect()">
+                <option value="ALL">🌟 All Topics</option>
+                <option value="MIX_TOPICS">🌪️ Mix Topics</option>
+                <option value="NUMBERS">🔢 Numbers</option>
+                <option value="COLOURS">🔵 Colours</option>
+                <option value="HOUSE_FURNITURE">🪑 House Furniture</option> 
+                <option value="HOUSE_ROOMS">🏡 House Rooms</option> 
+                <option value="HOBBIES">🎸 Hobbies</option>
+                <option value="CLOTHES">👕 Clothes</option>
+                <option value="WEATHER">☀️ Weather</option>
+                <option value="ANIMALS">🦊 Animals</option> 
+                <option value="SUPERHEROES">🦸 Superheroes</option>
+                <option value="FREETIME">📷 Free Time</option>
+            </select>
+        </div>
+
+        <div id="multiSelectContainer">
+            <label class="check-item"><input type="checkbox" value="NUMBERS">🔢 Numbers</label>
+            <label class="check-item"><input type="checkbox" value="COLOURS">🔵 Colours</label>
+            <label class="check-item"><input type="checkbox" value="HOUSE_FURNITURE">🪑 Furniture</label>
+            <label class="check-item"><input type="checkbox" value="HOUSE_ROOMS">🏡 Rooms</label>
+            <label class="check-item"><input type="checkbox" value="HOBBIES">🎸 Hobbies</label>
+            <label class="check-item"><input type="checkbox" value="CLOTHES">👕 Clothes</label>
+            <label class="check-item"><input type="checkbox" value="WEATHER">☀️ Weather</label>
+            <label class="check-item"><input type="checkbox" value="ANIMALS">🦊 Animals</label>
+            <label class="check-item"><input type="checkbox" value="SUPERHEROES">🦸 Superheroes</label>
+            <label class="check-item"><input type="checkbox" value="FREETIME">📷 Free Time</label>
+            <button onclick="applyAndClose()" style="grid-column: span 2; background: var(--accent); color: white; border: none; padding: 10px; border-radius: 15px; font-weight: bold; cursor: pointer;">Apply Mix</button>
+        </div>
     </div>
 
     <div class="scene">
@@ -203,7 +241,6 @@ select {
 
 <script>
 const vocab = [
- // House Furniture
  {en:"BOOKCASE", img:"bookcase.png", isImage: true, cat:"HOUSE_FURNITURE"},
  {en:"CHAIR", img:"🪑", cat:"HOUSE_FURNITURE"},
  {en:"CUPBOARD", img:"cupboard.png", isImage: true, cat:"HOUSE_FURNITURE"},
@@ -214,8 +251,6 @@ const vocab = [
  {en:"WINDOW", img:"🪟", cat:"HOUSE_FURNITURE"},
  {en:"BIN", img:"🗑️", cat:"HOUSE_FURNITURE"},
  {en:"SOFA", img:"🛋️", cat:"HOUSE_FURNITURE"},
- 
- // House Rooms
  {en:"GARDEN", img:"garden.png", isImage: true, cat:"HOUSE_ROOMS"},
  {en:"HALL", img:"hall.png", isImage: true, cat:"HOUSE_ROOMS"},
  {en:"KITCHEN", img:"kitchen.png", isImage: true, cat:"HOUSE_ROOMS"},
@@ -223,8 +258,6 @@ const vocab = [
  {en:"BEDROOM", img:"bedroom.png", isImage: true, cat:"HOUSE_ROOMS"},
  {en:"LIVING ROOM", img:"living room.png", isImage: true, cat:"HOUSE_ROOMS"},
  {en:"GARAGE", img:"garage.png", isImage: true, cat:"HOUSE_ROOMS"},
-
- // Hobbies
  {en:"DANCE", img:"💃", cat:"HOBBIES"},
  {en:"DO KARATE", img:"🥋", cat:"HOBBIES"},
  {en:"JUGGLE", img:"🤹", cat:"HOBBIES"},
@@ -233,8 +266,6 @@ const vocab = [
  {en:"PLAY THE GUITAR", img:"🎸", cat:"HOBBIES"},
  {en:"RIDE A BIKE", img:"🚴", cat:"HOBBIES"},
  {en:"SING", img:"🎤", cat:"HOBBIES"},
-
- // Clothes
  {en:"COAT", img:"🧥", cat:"CLOTHES"},
  {en:"DRESS", img:"👗", cat:"CLOTHES"},
  {en:"HAT", img:"🎩", cat:"CLOTHES"},
@@ -251,8 +282,6 @@ const vocab = [
  {en:"GLASSES", img:"👓", cat:"CLOTHES"},
  {en:"SCARF", img:"🧣", cat:"CLOTHES"},
  {en:"SOCKS", img:"🧦", cat:"CLOTHES"},
-
- // Weather
  {en:"CLOUDY", img:"☁️", cat:"WEATHER"},
  {en:"COLD", img:"❄️", cat:"WEATHER"},
  {en:"HOT", img:"🥵", cat:"WEATHER"},
@@ -261,8 +290,6 @@ const vocab = [
  {en:"SUNNY", img:"☀️", cat:"WEATHER"},
  {en:"WINDY", img:"🌬️", cat:"WEATHER"},
  {en:"STORMY", img:"⛈️", cat:"WEATHER"},
-
- // Animals
  {en:"BAT", img:"🦇", cat:"ANIMALS"},
  {en:"BIRD", img:"🐦", cat:"ANIMALS"},
  {en:"BUTTERFLY", img:"🦋", cat:"ANIMALS"},
@@ -281,8 +308,6 @@ const vocab = [
  {en:"SPIDER", img:"🕷️", cat:"ANIMALS"},
  {en:"FOX", img:"🦊", cat:"ANIMALS"},
  {en:"WALK", img:"🚶", cat:"ANIMALS"},
-
- // Colours
  {en:"BLUE", es:"AZUL", img:"🔵", cat:"COLOURS"},
  {en:"PINK", es:"ROSA", img:"🩷", cat:"COLOURS"},
  {en:"PURPLE", es:"MORADO", img:"💜", cat:"COLOURS"},
@@ -294,8 +319,6 @@ const vocab = [
  {en:"BROWN", es:"MARRÓN", img:"🟤", cat:"COLOURS"},
  {en:"GREY", es:"GRIS", img:"🩶", cat:"COLOURS"},
  {en:"ORANGE", es:"NARANJA", img:"🟠", cat:"COLOURS"},
-
- // Numbers
  {en:"ELEVEN", es:"ONCE", img:"1️⃣1️⃣", cat:"NUMBERS"},
  {en:"TWELVE", es:"DOCE", img:"1️⃣2️⃣", cat:"NUMBERS"},
  {en:"THIRTEEN", es:"TRECE", img:"1️⃣3️⃣", cat:"NUMBERS"},
@@ -316,8 +339,6 @@ const vocab = [
  {en:"EIGHT", es:"OCHO", img:"8️⃣", cat:"NUMBERS"},
  {en:"NINE", es:"NUEVE", img:"9️⃣", cat:"NUMBERS"},
  {en:"TEN", es:"DIEZ", img:"🔟", cat:"NUMBERS"},
-
- // Superheroes
  {en:"CLEVER", img:"🧠", cat:"SUPERHEROES"},
  {en:"FAST", img:"⚡", cat:"SUPERHEROES"},
  {en:"INVISIBLE", img:"invisible.png", isImage: true, cat:"SUPERHEROES"},
@@ -327,9 +348,7 @@ const vocab = [
  {en:"TALL", img:"tall.png", isImage: true, cat:"SUPERHEROES"},
  {en:"THIN", img:"thin.png", isImage: true, cat:"SUPERHEROES"},
  {en:"CAPE", img:"cape.png", isImage: true, cat:"SUPERHEROES"},
- {en:"BELT", img:"belt.png", isImage: true, cat:"SUPERHEROES"},
-
- // Free Time
+ {en:"BELT", img:"belt.png", isImage: true, cat:"CLOTHES"},
  {en:"DRAWING", img:"draw.png", isImage: true, cat:"FREETIME"},
  {en:"DRINKING", img:"drink.png", isImage: true, cat:"FREETIME"},
  {en:"EATING", img:"eat.png", isImage: true, cat:"FREETIME"},
@@ -347,7 +366,8 @@ const ui = {
     word: document.getElementById("cardWord"),
     counter: document.getElementById("counterDisplay"),
     prevBtn: document.getElementById("prevBtn"),
-    nextBtn: document.getElementById("nextBtn")
+    nextBtn: document.getElementById("nextBtn"),
+    multiPanel: document.getElementById("multiSelectContainer")
 };
 
 function shuffle(array) {
@@ -358,9 +378,32 @@ function shuffle(array) {
     return array;
 }
 
+function toggleMultiSelect() {
+    const cat = document.getElementById("categorySelect").value;
+    ui.multiPanel.style.display = (cat === "MIX_TOPICS") ? "grid" : "none";
+    if (cat !== "MIX_TOPICS") changeCategory();
+}
+
+function applyAndClose() {
+    changeCategory();
+    ui.multiPanel.style.display = "none";
+}
+
 function changeCategory() {
     const cat = document.getElementById("categorySelect").value;
-    currentList = shuffle(cat === "ALL" ? [...vocab] : vocab.filter(i => i.cat === cat));
+    let tempList = [];
+
+    if (cat === "ALL") {
+        tempList = [...vocab];
+    } else if (cat === "MIX_TOPICS") {
+        const checkedValues = Array.from(ui.multiPanel.querySelectorAll('input:checked')).map(cb => cb.value);
+        tempList = vocab.filter(item => checkedValues.includes(item.cat));
+    } else {
+        tempList = vocab.filter(i => i.cat === cat);
+    }
+
+    if (tempList.length === 0) return;
+    currentList = shuffle(tempList);
     currentIndex = 0;
     resetCard();
     updateUI();
