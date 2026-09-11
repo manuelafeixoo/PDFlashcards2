@@ -316,6 +316,22 @@ let currentList = [], currentIndex = 0, isFlipped = false, errorList = [];
 let gameMode = 'IMG-EN', isExamMode = false;
 let seconds = 0, timerInterval = null, correct = 0, wrong = 0, currentStreak = 0;
 
+/* --- Sistema de carga de voces para evitar el deletreo en Chrome --- */
+let voicesLoaded = [];
+
+function loadVoices() {
+    if ('speechSynthesis' in window) {
+        voicesLoaded = window.speechSynthesis.getVoices();
+    }
+}
+
+if ('speechSynthesis' in window) {
+    loadVoices();
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+}
+
 const ui = {
     card: document.getElementById("flashcard"),
     imgFront: document.getElementById("imgFront"),
@@ -464,10 +480,28 @@ function flipCard() {
     if(isFlipped) setTimeout(playCurrentAudio, 200);
 }
 
+/* --- Función de audio corregida para Chrome --- */
 function playCurrentAudio() {
+    if (!('speechSynthesis' in window)) return;
+
     window.speechSynthesis.cancel();
-    const msg = new SpeechSynthesisUtterance(currentList[currentIndex].en);
-    msg.lang = "en-GB"; msg.rate = 0.9;
+    
+    const texto = currentList[currentIndex].en;
+    const msg = new SpeechSynthesisUtterance(texto);
+    
+    msg.lang = "en-GB"; 
+    msg.rate = 0.9;
+
+    if (voicesLoaded.length === 0) {
+        loadVoices();
+    }
+    
+    const englishVoice = voicesLoaded.find(v => v.lang === "en-GB" || v.lang === "en-US") || voicesLoaded.find(v => v.lang.startsWith("en"));
+    
+    if (englishVoice) {
+        msg.voice = englishVoice;
+    }
+
     window.speechSynthesis.speak(msg);
 }
 
